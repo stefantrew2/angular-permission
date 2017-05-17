@@ -10,8 +10,8 @@ module.exports = function () {
       'concat',
       'ngAnnotate',
       'beautifier',
-      'uglify',
-      'test:e2e'
+      'uglify'
+      // 'test:e2e'
     ],
     'test:unit': [
       'karma'

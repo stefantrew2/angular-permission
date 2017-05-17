@@ -35,6 +35,7 @@ function PermPermissionMap($q, $log, $injector, $permission, PermTransitionPrope
 
     this.only = normalizeOnlyAndExceptProperty(permissionMap.only);
     this.except = normalizeOnlyAndExceptProperty(permissionMap.except);
+    this.params = normalizeOnlyAndParamsProperty(permissionMap.params);
     this.redirectTo = normalizeRedirectToProperty(permissionMap.redirectTo);
   }
 
@@ -66,17 +67,17 @@ function PermPermissionMap($q, $log, $injector, $permission, PermTransitionPrope
    *
    * @return {Array<Promise>}
    */
-  PermissionMap.prototype.resolvePropertyValidity = function (property) {
+  PermissionMap.prototype.resolvePropertyValidity = function (property, params) {
 
     return property.map(function (privilegeName) {
       if (PermRoleStore.hasRoleDefinition(privilegeName)) {
         var role = PermRoleStore.getRoleDefinition(privilegeName);
-        return role.validateRole();
+        return role.validateRole(params);
       }
 
       if (PermPermissionStore.hasPermissionDefinition(privilegeName)) {
         var permission = PermPermissionStore.getPermissionDefinition(privilegeName);
-        return permission.validatePermission();
+        return permission.validatePermission(params);
       }
 
       if (!$permission.suppressUndefinedPermissionWarning) {
@@ -141,6 +142,23 @@ function PermPermissionMap($q, $log, $injector, $permission, PermTransitionPrope
     }
 
     return [];
+  }
+
+  /**
+   * Handles extraction of permission map "params" properties and converts them into array objects
+   * @methodOf permission.PermissionMap
+   * @private
+   *
+   * @param property {String|Array|Function} PermPermission map property params
+   *
+   * @returns {Array<String>} Array of permission "only" or "except" names
+   */
+  function normalizeOnlyAndParamsProperty(params) {
+    if (!angular.isDefined(params)) {
+      return {};
+    }
+
+    return params;
   }
 
   /**

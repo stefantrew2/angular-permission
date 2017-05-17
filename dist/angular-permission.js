@@ -1,7 +1,7 @@
 /**
  * angular-permission
  * Fully featured role and permission based access control for your angular applications
- * @version v5.3.1 - 2017-05-16
+ * @version v5.3.1 - 2017-05-17
  * @link https://github.com/Narzerus/angular-permission
  * @author Rafael Vidaurre <narzerus@gmail.com> (http://www.rafaelvidaurre.com), Blazej Krysiak <blazej.krysiak@gmail.com>
  * @license MIT License, http://www.opensource.org/licenses/MIT
@@ -264,10 +264,16 @@
      *
      * @returns {Promise}
      */
-    Permission.prototype.validatePermission = function () {
+    Permission.prototype.validatePermission = function (params) {
+
+      if (angular.isUndefined(params)) {
+        params = {};
+      }
+
       var validationLocals = {
         permissionName: this.permissionName,
-        transitionProperties: PermTransitionProperties
+        transitionProperties: PermTransitionProperties,
+        params: params
       };
       var validationResult = $injector.invoke(this.validationFunction, null, validationLocals);
 
@@ -329,7 +335,7 @@
       if (!angular.isArray(validationFunction.$inject || validationFunction)) {
         // The function is not explicitly annotated, so assume using old-style parameters
         // and manually prepare for injection using our known old API parameters
-        validationFunction = ['permissionName', 'transitionProperties', validationFunction];
+        validationFunction = ['permissionName', 'transitionProperties', 'params', validationFunction];
       }
 
       return validationFunction;
@@ -377,10 +383,15 @@
      *
      * @returns {Promise} $q.promise object
      */
-    Role.prototype.validateRole = function () {
+    Role.prototype.validateRole = function (params) {
+      if (angular.isUndefined(params)) {
+        params = {};
+      }
+
       var validationLocals = {
         roleName: this.roleName,
-        transitionProperties: PermTransitionProperties
+        transitionProperties: PermTransitionProperties,
+        params: params
       };
       var validationResult = $injector.invoke(this.validationFunction, null, validationLocals);
 
@@ -448,7 +459,7 @@
       } else if (!angular.isArray(validationFunction.$inject || validationFunction)) {
         // The function is not explicitly annotated, so assume using old-style parameters
         // and manually prepare for injection using our known old API parameters
-        validationFunction = ['roleName', 'transitionProperties', validationFunction];
+        validationFunction = ['roleName', 'transitionProperties', 'params', validationFunction];
       }
 
       return validationFunction;
@@ -755,6 +766,7 @@
       bindToController: {
         sref: '=?permissionSref',
         only: '=?permissionOnly',
+        params: '=?permissionParams',
         except: '=?permissionExcept',
         onAuthorized: '&?permissionOnAuthorized',
         onUnauthorized: '&?permissionOnUnauthorized'
@@ -763,7 +775,7 @@
       controller: ['$scope', '$element', '$permission', function ($scope, $element, $permission) {
         var permission = this;
 
-        $scope.$watchGroup(['permission.only', 'permission.except', 'sref'],
+        $scope.$watchGroup(['permission.only', 'permission.except', 'sref', 'permission.params'],
           function () {
             try {
               if (isSrefStateDefined()) {
@@ -781,7 +793,8 @@
                 var PermAuthorization = $injector.get('PermAuthorization');
                 var permissionMap = new PermPermissionMap({
                   only: permission.only,
-                  except: permission.except
+                  except: permission.except,
+                  params: permission.params
                 });
 
                 PermAuthorization
@@ -880,7 +893,7 @@
      *
      */
     function resolveExceptPrivilegeMap(deferred, map) {
-      var exceptPromises = map.resolvePropertyValidity(map.except);
+      var exceptPromises = map.resolvePropertyValidity(map.except, map.params);
 
       $q.any(exceptPromises)
         .then(function (rejectedPermissions) {
@@ -905,7 +918,7 @@
         return;
       }
 
-      var onlyPromises = map.resolvePropertyValidity(map.only);
+      var onlyPromises = map.resolvePropertyValidity(map.only, map.params);
       $q.any(onlyPromises)
         .then(function (resolvedPermissions) {
           deferred.resolve(resolvedPermissions);
@@ -956,6 +969,7 @@
 
       this.only = normalizeOnlyAndExceptProperty(permissionMap.only);
       this.except = normalizeOnlyAndExceptProperty(permissionMap.except);
+      this.params = normalizeOnlyAndParamsProperty(permissionMap.params);
       this.redirectTo = normalizeRedirectToProperty(permissionMap.redirectTo);
     }
 
@@ -987,17 +1001,17 @@
      *
      * @return {Array<Promise>}
      */
-    PermissionMap.prototype.resolvePropertyValidity = function (property) {
+    PermissionMap.prototype.resolvePropertyValidity = function (property, params) {
 
       return property.map(function (privilegeName) {
         if (PermRoleStore.hasRoleDefinition(privilegeName)) {
           var role = PermRoleStore.getRoleDefinition(privilegeName);
-          return role.validateRole();
+          return role.validateRole(params);
         }
 
         if (PermPermissionStore.hasPermissionDefinition(privilegeName)) {
           var permission = PermPermissionStore.getPermissionDefinition(privilegeName);
-          return permission.validatePermission();
+          return permission.validatePermission(params);
         }
 
         if (!$permission.suppressUndefinedPermissionWarning) {
@@ -1062,6 +1076,23 @@
       }
 
       return [];
+    }
+
+    /**
+     * Handles extraction of permission map "params" properties and converts them into array objects
+     * @methodOf permission.PermissionMap
+     * @private
+     *
+     * @param property {String|Array|Function} PermPermission map property params
+     *
+     * @returns {Array<String>} Array of permission "only" or "except" names
+     */
+    function normalizeOnlyAndParamsProperty(params) {
+      if (!angular.isDefined(params)) {
+        return {};
+      }
+
+      return params;
     }
 
     /**

@@ -33,10 +33,16 @@ function PermPermission($q, $injector, PermTransitionProperties) {
    *
    * @returns {Promise}
    */
-  Permission.prototype.validatePermission = function () {
+  Permission.prototype.validatePermission = function (params) {
+
+    if (angular.isUndefined(params)) {
+      params = {};
+    }
+
     var validationLocals = {
       permissionName: this.permissionName,
-      transitionProperties: PermTransitionProperties
+      transitionProperties: PermTransitionProperties,
+      params: params
     };
     var validationResult = $injector.invoke(this.validationFunction, null, validationLocals);
 
@@ -98,7 +104,7 @@ function PermPermission($q, $injector, PermTransitionProperties) {
     if (!angular.isArray(validationFunction.$inject || validationFunction)) {
       // The function is not explicitly annotated, so assume using old-style parameters
       // and manually prepare for injection using our known old API parameters
-      validationFunction = ['permissionName', 'transitionProperties', validationFunction];
+      validationFunction = ['permissionName', 'transitionProperties', 'params', validationFunction];
     }
 
     return validationFunction;

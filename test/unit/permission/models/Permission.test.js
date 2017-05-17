@@ -64,14 +64,14 @@ describe('permission', function () {
               .and.callFake(function () {
                 return $q.resolve();
               });
-          var injectableValidationFunction = ['$q', 'transitionProperties', 'PermPermission', 'permissionName', validationFunction];
+          var injectableValidationFunction = ['$q', 'transitionProperties', 'PermPermission', 'permissionName', 'params', validationFunction];
           var permission = new PermPermission(permissionName, injectableValidationFunction);
 
           // WHEN
           var validationResult = permission.validatePermission();
 
           // THEN
-          expect(validationFunction).toHaveBeenCalledWith($q, PermTransitionProperties, PermPermission, permissionName);
+          expect(validationFunction).toHaveBeenCalledWith($q, PermTransitionProperties, PermPermission, permissionName, {});
           expect(validationResult).toBePromise();
           expect(validationResult).toBeResolved();
         });
@@ -88,7 +88,7 @@ describe('permission', function () {
           var validationResult = permission.validatePermission();
 
           // THEN
-          expect(validationFunction).toHaveBeenCalledWith(permissionName, PermTransitionProperties);
+          expect(validationFunction).toHaveBeenCalledWith(permissionName, PermTransitionProperties, {});
           expect(validationResult).toBePromise();
           expect(validationResult).toBeResolved();
         });
@@ -105,7 +105,7 @@ describe('permission', function () {
           var validationResult = permission.validatePermission();
 
           // THEN
-          expect(validationFunction).toHaveBeenCalledWith(permissionName, PermTransitionProperties);
+          expect(validationFunction).toHaveBeenCalledWith(permissionName, PermTransitionProperties, {});
           expect(validationResult).toBePromise();
           expect(validationResult).toBeResolved();
         });
@@ -122,7 +122,7 @@ describe('permission', function () {
           var validationResult = permission.validatePermission();
 
           // THEN
-          expect(validationFunction).toHaveBeenCalledWith(permissionName, PermTransitionProperties);
+          expect(validationFunction).toHaveBeenCalledWith(permissionName, PermTransitionProperties, {});
           expect(validationResult).toBePromise();
           expect(validationResult).toBeRejected();
         });

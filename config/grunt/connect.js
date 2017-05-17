@@ -4,7 +4,7 @@ module.exports = function () {
   return {
     default: {
       options: {
-        port: 8000,
+        port: 8888,
         base: '.',
         keepalive: false
       }

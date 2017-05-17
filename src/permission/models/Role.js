@@ -11,7 +11,7 @@
  *
  * @return {Role}
  */
-function PermRole($q, $injector, PermPermissionStore, PermTransitionProperties) {
+ function PermRole($q, $injector, PermPermissionStore, PermTransitionProperties) {
   'ngInject';
 
   /**
@@ -22,7 +22,7 @@ function PermRole($q, $injector, PermPermissionStore, PermTransitionProperties) 
    * @param validationFunction {Function|Array<String>} Optional function used to validate if permissions are still
    *   valid or list of permission names representing role
    */
-  function Role(roleName, validationFunction) {
+   function Role(roleName, validationFunction) {
     validateConstructor(roleName, validationFunction);
 
     this.roleName = roleName;
@@ -35,10 +35,15 @@ function PermRole($q, $injector, PermPermissionStore, PermTransitionProperties) 
    *
    * @returns {Promise} $q.promise object
    */
-  Role.prototype.validateRole = function () {
+   Role.prototype.validateRole = function (params) {
+     if (angular.isUndefined(params)) {
+      params = {};
+    }
+
     var validationLocals = {
       roleName: this.roleName,
-      transitionProperties: PermTransitionProperties
+      transitionProperties: PermTransitionProperties,
+      params :params
     };
     var validationResult = $injector.invoke(this.validationFunction, null, validationLocals);
 
@@ -59,7 +64,7 @@ function PermRole($q, $injector, PermPermissionStore, PermTransitionProperties) 
    *
    * @return {Promise}
    */
-  function wrapInPromise(result, roleName) {
+   function wrapInPromise(result, roleName) {
     if (result) {
       return $q.resolve(roleName);
     }
@@ -78,7 +83,7 @@ function PermRole($q, $injector, PermPermissionStore, PermTransitionProperties) 
    * @param validationFunction {Function|Array<String>} Optional function used to validate if permissions are still
    *   valid or list of permission names representing role
    */
-  function validateConstructor(roleName, validationFunction) {
+   function validateConstructor(roleName, validationFunction) {
     if (!angular.isString(roleName)) {
       throw new TypeError('Parameter "roleName" name must be String');
     }
@@ -99,14 +104,14 @@ function PermRole($q, $injector, PermPermissionStore, PermTransitionProperties) 
    *
    * @return {Function} Explicitly injectable function
    */
-  function annotateValidationFunction(validationFunction) {
+   function annotateValidationFunction(validationFunction) {
     // Test if the validation function is just an array of permission names
     if (angular.isArray(validationFunction) && !angular.isFunction(validationFunction[validationFunction.length - 1])) {
       validationFunction = preparePermissionEvaluation(validationFunction);
     } else if (!angular.isArray(validationFunction.$inject || validationFunction)) {
       // The function is not explicitly annotated, so assume using old-style parameters
       // and manually prepare for injection using our known old API parameters
-      validationFunction = ['roleName', 'transitionProperties', validationFunction];
+      validationFunction = ['roleName', 'transitionProperties', 'params', validationFunction];
     }
 
     return validationFunction;
@@ -121,7 +126,7 @@ function PermRole($q, $injector, PermPermissionStore, PermTransitionProperties) 
    *
    * @return {Function}
    */
-  function preparePermissionEvaluation(permissions) {
+   function preparePermissionEvaluation(permissions) {
     return function () {
       var promises = permissions.map(function (permissionName) {
         if (PermPermissionStore.hasPermissionDefinition(permissionName)) {
@@ -141,5 +146,5 @@ function PermRole($q, $injector, PermPermissionStore, PermTransitionProperties) 
 }
 
 angular
-  .module('permission')
-  .factory('PermRole', PermRole);
+.module('permission')
+.factory('PermRole', PermRole);

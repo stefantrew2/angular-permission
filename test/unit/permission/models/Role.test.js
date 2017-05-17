@@ -61,14 +61,14 @@ describe('permission', function () {
           var validationFunction = jasmine.createSpy('validationFunction').and.callFake(function () {
             return true;
           });
-          var injectableValidationFunction = ['PermRole', 'transitionProperties', 'PermPermissionStore', 'roleName', validationFunction];
+          var injectableValidationFunction = ['PermRole', 'transitionProperties', 'PermPermissionStore', 'roleName', 'params', validationFunction];
           var role = new PermRole('ACCOUNTANT', injectableValidationFunction);
 
           // WHEN
           role.validateRole();
 
           // THEN
-          expect(validationFunction).toHaveBeenCalledWith(PermRole, PermTransitionProperties, PermPermissionStore, role.roleName);
+          expect(validationFunction).toHaveBeenCalledWith(PermRole, PermTransitionProperties, PermPermissionStore, role.roleName, {});
         });
 
         it('should call directly validationFunction when no permissions were provided', function () {
@@ -114,7 +114,7 @@ describe('permission', function () {
           var validationResult = permission.validateRole();
 
           // THEN
-          expect(validationFunction).toHaveBeenCalledWith(roleName, PermTransitionProperties);
+          expect(validationFunction).toHaveBeenCalledWith(roleName, PermTransitionProperties, {});
           expect(validationResult).toBePromise();
           expect(validationResult).toBeResolved();
         });
@@ -131,7 +131,7 @@ describe('permission', function () {
           var validationResult = permission.validateRole();
 
           // THEN
-          expect(validationFunction).toHaveBeenCalledWith(permissionName, PermTransitionProperties);
+          expect(validationFunction).toHaveBeenCalledWith(permissionName, PermTransitionProperties, {});
           expect(validationResult).toBePromise();
           expect(validationResult).toBeRejected();
         });

@@ -37,7 +37,7 @@ function PermAuthorization($q) {
    *
    */
   function resolveExceptPrivilegeMap(deferred, map) {
-    var exceptPromises = map.resolvePropertyValidity(map.except);
+    var exceptPromises = map.resolvePropertyValidity(map.except, map.params);
 
     $q.any(exceptPromises)
       .then(function (rejectedPermissions) {
@@ -62,7 +62,7 @@ function PermAuthorization($q) {
       return;
     }
 
-    var onlyPromises = map.resolvePropertyValidity(map.only);
+    var onlyPromises = map.resolvePropertyValidity(map.only, map.params);
     $q.any(onlyPromises)
       .then(function (resolvedPermissions) {
         deferred.resolve(resolvedPermissions);

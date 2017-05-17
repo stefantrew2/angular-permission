@@ -59,6 +59,7 @@ function PermissionDirective($log, $injector, PermPermissionMap, PermPermissionS
     bindToController: {
       sref: '=?permissionSref',
       only: '=?permissionOnly',
+      params: '=?permissionParams',
       except: '=?permissionExcept',
       onAuthorized: '&?permissionOnAuthorized',
       onUnauthorized: '&?permissionOnUnauthorized'
@@ -67,7 +68,7 @@ function PermissionDirective($log, $injector, PermPermissionMap, PermPermissionS
     controller: function ($scope, $element, $permission) {
       var permission = this;
 
-      $scope.$watchGroup(['permission.only', 'permission.except', 'sref'],
+      $scope.$watchGroup(['permission.only', 'permission.except', 'sref', 'permission.params'],
         function () {
           try {
             if (isSrefStateDefined()) {
@@ -83,7 +84,7 @@ function PermissionDirective($log, $injector, PermPermissionMap, PermPermissionS
                 });
             } else {
               var PermAuthorization = $injector.get('PermAuthorization');
-              var permissionMap = new PermPermissionMap({only: permission.only, except: permission.except});
+              var permissionMap = new PermPermissionMap({only: permission.only, except: permission.except, params: permission.params});
 
               PermAuthorization
                 .authorizeByPermissionMap(permissionMap)
