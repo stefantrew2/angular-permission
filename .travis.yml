@@ -1,5 +1,4 @@
 language: node_js
-sudo: required
 cache:
   directories:
     - node_modules
@@ -25,4 +24,4 @@ deploy:
   on:
     tags: true
     repo: Narzerus/angular-permission
-    branch: ng1
+    branch: master
